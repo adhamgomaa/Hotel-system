@@ -42,6 +42,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.tpSearch = new System.Windows.Forms.TabPage();
             this.dgvRooms = new System.Windows.Forms.DataGridView();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtRoomNo = new Guna.UI2.WinForms.Guna2TextBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
@@ -56,14 +58,12 @@
             this.txtPhone2 = new Guna.UI2.WinForms.Guna2TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.tpAddRoom.SuspendLayout();
             this.tpSearch.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRooms)).BeginInit();
-            this.tpUpdate.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
+            this.tpUpdate.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -273,6 +273,21 @@
             this.dgvRooms.TabIndex = 2;
             this.dgvRooms.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvRooms_CellClick);
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.deleteToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(108, 26);
+            // 
+            // deleteToolStripMenuItem
+            // 
+            this.deleteToolStripMenuItem.Image = global::HMS_Presentation.Properties.Resources.close__2_;
+            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
+            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
+            this.deleteToolStripMenuItem.Text = "Delete";
+            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
+            // 
             // txtRoomNo
             // 
             this.txtRoomNo.Anchor = System.Windows.Forms.AnchorStyles.None;
@@ -391,6 +406,7 @@
             this.radioNo2.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(198)))), ((int)(((byte)(218)))));
             this.radioNo2.CheckedState.InnerColor = System.Drawing.Color.White;
             this.radioNo2.CheckedState.InnerOffset = -4;
+            this.radioNo2.Enabled = false;
             this.radioNo2.Location = new System.Drawing.Point(291, 235);
             this.radioNo2.Name = "radioNo2";
             this.radioNo2.Size = new System.Drawing.Size(41, 21);
@@ -411,6 +427,7 @@
             this.radioYes2.CheckedState.FillColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(198)))), ((int)(((byte)(218)))));
             this.radioYes2.CheckedState.InnerColor = System.Drawing.Color.White;
             this.radioYes2.CheckedState.InnerOffset = -4;
+            this.radioYes2.Enabled = false;
             this.radioYes2.Location = new System.Drawing.Point(291, 202);
             this.radioYes2.Name = "radioYes2";
             this.radioYes2.Size = new System.Drawing.Size(46, 21);
@@ -504,21 +521,6 @@
             this.label10.TabIndex = 0;
             this.label10.Text = "Type:";
             // 
-            // contextMenuStrip1
-            // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.deleteToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 48);
-            // 
-            // deleteToolStripMenuItem
-            // 
-            this.deleteToolStripMenuItem.Image = global::HMS_Presentation.Properties.Resources.close__2_;
-            this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            this.deleteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.deleteToolStripMenuItem.Text = "Delete";
-            this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
-            // 
             // ctrlRoom
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 17F);
@@ -537,9 +539,9 @@
             this.tpSearch.ResumeLayout(false);
             this.tpSearch.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRooms)).EndInit();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.tpUpdate.ResumeLayout(false);
             this.tpUpdate.PerformLayout();
-            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }

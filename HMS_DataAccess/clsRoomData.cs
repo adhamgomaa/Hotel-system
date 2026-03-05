@@ -17,11 +17,11 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Rooms Where RoomID = @id";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_FindRoomByRoomId", connection))
                     {
-                        command.Parameters.AddWithValue("@id", roomId);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@roomId", roomId);
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -36,7 +36,7 @@ namespace HMS_DataAccess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 isFound = false;
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
@@ -51,11 +51,11 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Rooms Where Type = @type and IsFree = 1";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_FindRoomByType", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@type", roomType);
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -66,7 +66,7 @@ namespace HMS_DataAccess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -80,10 +80,10 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Rooms order by RoomID desc";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_GetAllRooms", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -92,7 +92,7 @@ namespace HMS_DataAccess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -106,21 +106,23 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Insert into Rooms Values (@type, @phone, @Free, @userId); SELECT SCOPE_IDENTITY();";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_AddRoom", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@type", roomType);
                         command.Parameters.AddWithValue("@phone", phone);
-                        command.Parameters.AddWithValue("@Free", isFree);
+                        command.Parameters.AddWithValue("@isFree", isFree);
                         command.Parameters.AddWithValue("@userId", createdByUserID);
-                        object result = command.ExecuteScalar();
-                        if (result != null && int.TryParse(result.ToString(), out int insertedId))
-                            roomId = insertedId;
+                        SqlParameter outputId = new SqlParameter("@roomId", SqlDbType.Int);
+                        outputId.Direction = ParameterDirection.Output;
+                        command.Parameters.Add(outputId);
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                        roomId = (int)outputId.Value;
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -134,20 +136,20 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Update Rooms Set Type = @type, Phone = @phone, IsFree = @isFree, CreatedByUserID = @userId where RoomID = @roomId";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_UpdateRoom", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@type", roomType);
                         command.Parameters.AddWithValue("@phone", phone);
                         command.Parameters.AddWithValue("@isFree", isFree);
                         command.Parameters.AddWithValue("@userId", createdByUserID);
                         command.Parameters.AddWithValue("@roomId", roomId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -161,16 +163,16 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Delete from Rooms Where RoomID = @roomId";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_DeleteRoom", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@roomId", roomId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }

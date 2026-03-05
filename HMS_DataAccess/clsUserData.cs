@@ -17,11 +17,11 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Users Where UserID = @id";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_FindUserByUserId", connection))
                     {
-                        command.Parameters.AddWithValue("@id", userId);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -48,12 +48,12 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Users Where UserName = @username and Password = @pass";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_FindUserByUsernameAndPass", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@username", username);
-                        command.Parameters.AddWithValue("@pass", password);
+                        command.Parameters.AddWithValue("@password", password);
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -80,11 +80,11 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Users Where UserName = @username";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_FindUserByUsername", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@username", username);
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -110,10 +110,10 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Users order by UserID desc";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_GetAllUsers", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -122,7 +122,7 @@ namespace HMS_DataAccess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -136,19 +136,21 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Insert into Users Values (@username, @pass); SELECT SCOPE_IDENTITY();";
-                    using(SqlCommand command = new SqlCommand(query,connection))
+                    using (SqlCommand command = new SqlCommand("SP_AddnewUser", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@username", username);
-                        command.Parameters.AddWithValue("@pass", password);
-                        object result = command.ExecuteScalar();
-                        if (result != null && int.TryParse(result.ToString(), out int insertedId))
-                            UserId = insertedId;
+                        command.Parameters.AddWithValue("@password", password);
+                        SqlParameter outputId = new SqlParameter("@userId", SqlDbType.Int);
+                        outputId.Direction = ParameterDirection.Output;
+                        command.Parameters.Add(outputId);
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                        UserId = (int)outputId.Value;
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -162,18 +164,18 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Update Users Set UserName = @username, Password = @pass where UserID = @userId";
-                    using( SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_UpdateUser", connection))
                     {
+                        command.CommandType= CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@username", username);
-                        command.Parameters.AddWithValue("@pass", password);
+                        command.Parameters.AddWithValue("@password", password);
                         command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -187,16 +189,16 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Delete from Users Where UserID = @id";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_DeleteUser", connection))
                     {
-                        command.Parameters.AddWithValue("@id", userId);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@userId", userId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }

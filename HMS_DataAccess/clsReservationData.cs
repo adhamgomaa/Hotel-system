@@ -18,11 +18,11 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Reservation Where ReservationID = @id";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_FindReservation", connection))
                     {
-                        command.Parameters.AddWithValue("@id", ID);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@reservationId", ID);
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -38,7 +38,7 @@ namespace HMS_DataAccess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 isFound = false;
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
@@ -53,10 +53,10 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Reservation_view order by ReservationID desc";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_GetAllReservations", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -65,7 +65,7 @@ namespace HMS_DataAccess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -79,22 +79,24 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Insert into Reservation Values (@dateIn, @dateOut, @roomId, @clientId, @userId); SELECT SCOPE_IDENTITY();";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_AddReservation", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@dateIn", dateIn);
                         command.Parameters.AddWithValue("@dateOut", dateOut);
                         command.Parameters.AddWithValue("@roomId", roomID);
                         command.Parameters.AddWithValue("@clientId", clientID);
                         command.Parameters.AddWithValue("@userId", createdByUserID);
-                        object result = command.ExecuteScalar();
-                        if (result != null && int.TryParse(result.ToString(), out int insertedId))
-                            reservationId = insertedId;
+                        SqlParameter outputId = new SqlParameter("@reservationId", SqlDbType.Int);
+                        outputId.Direction = ParameterDirection.Output;
+                        command.Parameters.Add(outputId);
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                        reservationId = (int)outputId.Value;
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -108,21 +110,21 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Update Reservation Set DateIn = @dateIn, DateOut = @dateOut, RoomNo = @roomId, ClientID = @clientId, CreatedByUserID = @userId where ReservationID = @reservationId";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_UpdateReservtion", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@dateIn", dateIn);
                         command.Parameters.AddWithValue("@dateOut", dateOut);
                         command.Parameters.AddWithValue("@roomId", roomID);
                         command.Parameters.AddWithValue("@clientId", clientID);
                         command.Parameters.AddWithValue("@userId", createdByUserID);
                         command.Parameters.AddWithValue("@reservationId", reservationId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }
@@ -136,16 +138,16 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Delete from Reservation Where ReservationID = @reservationId";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_DeleteReservation", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@reservationId", reservationId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
             }

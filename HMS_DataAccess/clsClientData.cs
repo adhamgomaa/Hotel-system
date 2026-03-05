@@ -18,11 +18,11 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Clients Where ClientID = @id";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_FindClient", connection))
                     {
-                        command.Parameters.AddWithValue("@id", clientId);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@clientId", clientId);
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.Read())
@@ -39,7 +39,7 @@ namespace HMS_DataAccess
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 isFound = false;
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
@@ -54,10 +54,10 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Select * from Clients order by ClientID desc";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_GetAllClients", connection))
                     {
+                        command.CommandType= CommandType.StoredProcedure;
+                        connection.Open();
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -79,23 +79,25 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Insert Into Clients Values (@fname, @lname, @phone, @address, @national, @userId); SELECT SCOPE_IDENTITY();";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_AddClients", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@fname", firstName);
                         command.Parameters.AddWithValue("@lname", lastName);
                         command.Parameters.AddWithValue("@phone", phone);
                         command.Parameters.AddWithValue("@address", address);
                         command.Parameters.AddWithValue("@national", nationalID);
                         command.Parameters.AddWithValue("@userId", createdByUserID);
-                        object result = command.ExecuteScalar();
-                        if(result != null && int.TryParse(result.ToString(), out int InsertedId))
-                            ClientID = InsertedId;
+                        SqlParameter outputId = new SqlParameter("@clientId", SqlDbType.Int);
+                        outputId.Direction = ParameterDirection.Output;
+                        command.Parameters.Add(outputId);
+                        connection.Open();
+                        command.ExecuteNonQuery();
+                        ClientID = (int)outputId.Value;
                     }
                 }
             }
-            catch(Exception ex)
+            catch(SqlException ex)
             {
                 ClientID = -1;
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
@@ -111,10 +113,9 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Update Clients Set FirstName = @fname, LastName = @lname, Phone = @phone, Address = @address, NationalNo = @national, CreatedByUserID = @userId where ClientID = @clientId";
-                    using (SqlCommand command = new SqlCommand(query, connection))
+                    using (SqlCommand command = new SqlCommand("SP_UpdateClient", connection))
                     {
+                        command.CommandType = CommandType.StoredProcedure;
                         command.Parameters.AddWithValue("@fname", firstName);
                         command.Parameters.AddWithValue("@lname", lastName);
                         command.Parameters.AddWithValue("@phone", phone);
@@ -122,11 +123,12 @@ namespace HMS_DataAccess
                         command.Parameters.AddWithValue("@national", nationalID);
                         command.Parameters.AddWithValue("@userId", createdByUserID);
                         command.Parameters.AddWithValue("@clientId", clientId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 rowAffected = 0;
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
@@ -141,16 +143,16 @@ namespace HMS_DataAccess
             {
                 using (SqlConnection connection = new SqlConnection(clsDataAccessSettings.ConnectionString))
                 {
-                    connection.Open();
-                    string query = "Delete from Clients Where ClientID = @id";
-                    using(SqlCommand command = new SqlCommand(query,connection))
+                    using(SqlCommand command = new SqlCommand("SP_DeleteClient", connection))
                     {
-                        command.Parameters.AddWithValue("@id", clientId);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.Parameters.AddWithValue("@clientId", clientId);
+                        connection.Open();
                         rowAffected = command.ExecuteNonQuery();
                     }
                 }
             }
-            catch (Exception ex)
+            catch (SqlException ex)
             {
                 rowAffected = 0;
                 clsLogger.LoggingAllExepctions(ex.Message, System.Diagnostics.EventLogEntryType.Error);
